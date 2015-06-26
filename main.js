@@ -5,22 +5,29 @@ var express = require('express'),
 
 //var app = express();
 
-var datastore = new MongoDBHelper();
+var datastore = new MongoDBHelper(undefined,function(err) {
+    if (err) {
+        console.err("Cannot connect to mongodb, error:" + err);
+        process.exit(1);
+    }
+    exec_server();
+});
 
 
-var date = new Date();
-date = date.getUTCDate() + ' ' + date.getUTCMonth() + 
-        ' ' + date.getUTCFullYear();
-
-var testfun = function(err,data) {
-    console.log('Entering test function');
-    if (err) return console.log(err);
-    console.log('Checking if filters were added');
-    datastore.get_filter(date,'1',function(err,result) {
+function exec_server() {
+    var testfun = function(err,data) {
+        console.log('Entering test function');
         if (err) return console.log(err);
-        console.log(result);
-    });
-};
+        console.log('Checking if filters were added for date:' + date);
+        datastore.get_filter(date,'1',function(err,result) {
+            if (err) return console.log(err);
+            console.log(result);
+        });
+    };
 
-//filtergen.generateFilterDummy(datastore,'serials_1',testfun);
-testfun();
+    var date = new Date();
+    date = date.getUTCDate() + ' ' + date.getUTCMonth() + 
+            ' ' + date.getUTCFullYear();
+    filtergen.generateFilterDummy(datastore,'serials_1',testfun);
+    testfun();
+}
