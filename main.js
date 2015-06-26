@@ -1,11 +1,11 @@
 var express = require('express'),
-    SqliteDatastore = require('./lib/sqlitedatastore'),
-    filtergen = require('./lib/filter_gen.js'),
+    MongoDBHelper = require('./lib/mongodbhelper'),
+    filtergen = require('./lib/filter_gen'),
     filter_diff = require('./lib/filter_diff');
 
 //var app = express();
 
-var datastore = new SqliteDatastore();
+var datastore = new MongoDBHelper();
 
 
 var date = new Date();
