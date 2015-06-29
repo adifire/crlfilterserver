@@ -11,22 +11,23 @@ var express = require('express'),
 
 //var app = express();
 
-var datastore = new MongoDBHelper(undefined,function(err) {
+start_server();
+/*var datastore = new MongoDBHelper(undefined,function(err) {
     if (err) {
         console.err("Cannot connect to mongodb, error:" + err);
         process.exit(1);
     }
     //exec_server();
-    start_server();
-});
+});*/
 
 
 function start_server() {
     var app = express();
+    app.set('view engine','jade');
     app.use(logger('dev'));
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: false }));
-    app.use(cookieParser());
+    //app.use(cookieParser());
     
     app.use('/',routes);
     app.use(function(req, res, next) {
@@ -37,6 +38,7 @@ function start_server() {
 
     if (app.get('env') === 'development') {
         app.use(function(err, req, res, next) {
+            console.log(err);
             res.status(err.status || 500);
             res.render('error', {
                 message: err.message,
@@ -49,6 +51,7 @@ function start_server() {
     // no stacktraces leaked to user
     app.use(function(err, req, res, next) {
         res.status(err.status || 500);
+        console.log(err);
         res.render('error', {
             message: err.message,
             error: {}
