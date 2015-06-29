@@ -11,39 +11,15 @@ router.get('/',function(req,res){
 router.get('/filter',function(req,res){
     var q = req.query;
     console.log(q);
-    if (utils.isEmpty(q)) {
-        dbconnector(function(store) {
-            store.getCurrentFilter(function(err,result) {
-                if (err) return res.end('Error');
-                console.log(result);
-                res.json(result[0].filters['1']);
-            });
+    var date = q.date || 'current',
+        type = q.type || '1';
+    dbconnector(function(store) {
+        store.getFilter(date,type,function(err,result) {
+            if (err) return res.end('Error');
+            console.log(result);
+            return res.json(result[0].filters[type]);
         });
-    }
-
-    if (!('date' in q) && 'type' in q) {
-        var type = '' + q.type;
-        console.log(type);
-        dbconnector(function(store) {
-            store.getCurrentFilter(function(err,result) {
-                if (err) return;
-                res.json(result[0].filters[type]);
-            });
-        });
-    }
-
-    if ('date' in q && 'type' in q) {
-        var date = '' + q.date,
-            type = '' + q.type;
-        dbconnector(function(store) {
-            store.getDiff(date,type,function(err,result) {
-                if (err) return;
-                res.json(result[0].diff);
-            });
-        });
-    }
-    throw new Error('Required page not found');
-    //res.end('Nothing here');
+    });
 });
 
 var dbconnector = function(callback) {

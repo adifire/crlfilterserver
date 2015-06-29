@@ -4,7 +4,8 @@
   "description": "Server module for the CRLFilter Firefox add-on",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node main.js"
   },
   "keywords": [
     "CRLFilter",
@@ -20,8 +21,11 @@
       "debug": "~2.1.1",
       "sqlite3": "*",
       "bloem": "*",
-      "mongodb": "~2.0"
+      "mongodb": "~2.0",
+      "cron": "~1.0"
   },
   "author": "Aditya Rao",
-  "license": "ISC"
+  "license": "ISC",
+  "readme": "README.md",
+  "repository": "https://github.com/adifire/crlfilterserver.git"
 }
