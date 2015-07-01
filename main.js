@@ -1,10 +1,11 @@
 var CronJob = require('cron').CronJob,
+    config = require('./config'),
     app = require('./lib/app'),
     MongoDBHelper = require('./lib/mongodbhelper'),
     filtergen = require('./lib/filter_gen'),
     filter_diff = require('./lib/filter_diff');
 
-const datastoreurl = 'mongodb://localhost:27017/crlfilter';
+const datastoreurl = config.mongodb.url;
 
 /*var datastore = new MongoDBHelper(undefined,function(err) {
     if (err) {
@@ -14,9 +15,7 @@ const datastoreurl = 'mongodb://localhost:27017/crlfilter';
     //exec_server();
 });*/
 
-
-var server = new app();
-
+var server = new app(config);
 
 var filtergencron = function() {
     console.log('Starting job');
@@ -33,14 +32,14 @@ var filtergencron = function() {
 };
 
 var job = new CronJob({
-    cronTime: '*/5 * * * * *',
+    cronTime: '00 */1 * * * *',
     onTick: filtergencron,
     start: true,
     timeZone: 'UTC'
 });
 
 //job.start();
-server.start(undefined,3130);
+server.start();
 
 function exec_server() {
     var date = new Date();
