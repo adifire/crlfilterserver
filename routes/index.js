@@ -1,6 +1,8 @@
 var express = require('express'),
     utils = require('../lib/utils'),
     mongodbclient = require('../lib/mongodbhelper'),
+    redisclient = new require('../lib/redisstore').RedisStore(),
+    filterdiff = require('../lib/filter_diff'),
     router = express.Router(),
     datastoreurl = 'mongodb://localhost:27017/crlfilter';
 

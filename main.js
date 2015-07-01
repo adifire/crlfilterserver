@@ -1,4 +1,6 @@
 var app = require('./lib/app'),
+var CronJob = require('cron').CronJob,
+    app = require('./lib/app'),
     MongoDBHelper = require('./lib/mongodbhelper'),
     filtergen = require('./lib/filter_gen'),
     filter_diff = require('./lib/filter_diff');
@@ -15,7 +17,6 @@ var app = require('./lib/app'),
 
 var server = new app();
 
-server.start(undefined,3130);
 
 
 function exec_server() {
