@@ -17,6 +17,7 @@ router.get('/filter',function(req,res){
     var date = q.date || 'current',
         type = q.type || '1',
         curdate = utils.getFormattedDate();
+
     /*
      * If old date, check if diff exists. If not generate 
      * and store diff also
@@ -43,12 +44,10 @@ router.get('/filter',function(req,res){
      * then generate, store and send diff
      */
     redisclient.getDiff(curdate,date,type,function(err,result) {
-        if (err || !res || res == 0) return getDiffMongodb(curdate,date,type,res);
-        res.json({
-            'date': curdate,
-            'type': type,
-            'diff': result
-        });
+        if (err || !res || res == 0) 
+            return getDiffMongodb(curdate,date,type,res);
+
+        res.json({'date': curdate,'type': type,'diff': result});
     });
     
 });
