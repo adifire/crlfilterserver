@@ -1,6 +1,8 @@
 var assert = require('assert'),
     fs = require('fs'),
     async = require('async'),
+    chai = require('chai'),
+    expect = chai.expect,
     test_config = require('./diff_config'),
     MongoDBHelper = require('../lib/mongodbhelper'),
     RedisStore = require('../lib/redisstore.js').RedisStore,
@@ -50,7 +52,7 @@ var exec_test = function(mongodb,redis) {
             },
             function(res,callback) {
                 //assert.equal(err,undefined,'Error while generating first diff: ' + err);
-                assert(res !== undefined,'Error, diff is empty');
+                expect(res).to.exist;
                 console.log('Construct and check whether it creates the right filter');
                 return checkConstructedFilter(mongodb,redis,olddate,curdate,'1',callback);
             },
@@ -98,8 +100,8 @@ var checkConstructedFilter = function(mongodb,redis,olddate,curdate,type,callbac
                 assert(!err3,'Error while fetching diff');
                 //console.log(diff);
                 assert(diff,'Error while fetching diff, diff is empty/null');
-                var reconstructedfilter = reconstructfilter(oldfilter,diff);
-                assert(checkfilter(newfilter,reconstructedfilter),'Error: Reconstructed filter not the same as current filter');
+                var reconstructedfilter = reconstructfilter(oldfilter,JSON.parse(diff));
+                expect(reconstructedfilter).to.deep.equal(newfilter);//,'Error: Reconstructed filter not the same as current filter');
                 callback();
             });
         });
@@ -109,12 +111,15 @@ var checkConstructedFilter = function(mongodb,redis,olddate,curdate,type,callbac
 
 var reconstructfilter = function(oldfilter,diff) {
     assert(diff,'Diff not generated properly, no buffer changes');
-    var oldbuffer = oldfilter.filter.bitfield.buffer;
-    var diffbuffer = JSON.parse(diff).buffer.data;
+    if (diff.hasOwnProperty('count')) {
+        oldfilter.count = diff.count;
+    }
+    var oldbuffer = oldfilter.filter.bitfield.buffer.data;
+    var diffbuffer = diff.buffer;
     for (var i in diffbuffer) {
-        if (oldbuffer[i] !== diff.buffer[i]) {
-            console.log(i);
-            oldbuffer[i] = diff.buffer[i];
+        var j = parseInt(i,10);
+        if (oldbuffer[j] !== diff.buffer[i]) {
+            oldbuffer[j] = diff.buffer[i];
         }
     }
     return oldfilter;

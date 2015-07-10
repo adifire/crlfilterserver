@@ -1,8 +1,8 @@
 var express = require('express'),
     config = require('../config'),
     utils = require('../lib/utils'),
-    mongodbclient = require('../lib/mongodbhelper'),
-    redisclient = new require('../lib/redisstore').RedisStore(config.redis),
+    mongodb = require('../lib/mongodbhelper'),
+    redis = new require('../lib/redisstore').RedisStore(config.redis),
     filterdiff = require('../lib/filter_diff'),
     router = express.Router(),
     datastoreurl = config.mongodb.url;
@@ -22,7 +22,7 @@ router.get('/filter',function(req,res){
      * If old date, check if diff exists. If not generate 
      * and store diff also
      */
-    if (date == curdate || date === 'current') {
+    if (date === curdate || date === 'current') {
         // Return current filter
         date = 'current';
         return dbconnector(function(err,store) {
@@ -43,28 +43,30 @@ router.get('/filter',function(req,res){
      * Try to fetch the diff, if not present in redis store 
      * then generate, store and send diff
      */
-    redisclient.getDiff(curdate,date,type,function(err,result) {
-        if (err || !res || res == 0) 
+    redis.getDiff(curdate,date,type,function(err,result) {
+        if (err || !result || result === 0) {
             return getDiffMongodb(curdate,date,type,res);
-
+        }
         res.json({'date': curdate,'type': type,'diff': result});
     });
     
 });
 
 var dbconnector = function(callback) {
-    var store = new mongodbclient(datastoreurl,function(err) {
-        if (err) callback(err);
+    var store = new mongodb(datastoreurl,function(err) {
+        if (err) return callback(err);
         return callback(undefined,store);
     });
 };
 
 var getDiffMongodb = function(curdate,olddate,type,response) {
     dbconnector(function(err,mongodb) {
-        if (err) throw err;
-        filter_diff.generateDiff(mongodb,redisclient,olddate,type,function(err,res) {
+        if (err) {
+            throw err;
+        }
+        filterdiff.generateDiff(mongodb,redis,olddate,type,function(err,res) {
             if (err) {
-                store.getFilter('current',function(err,res) {
+                return mongodb.getFilter('current',function(err,res) {
                     if (err) throw err;
                     return response.json({
                         'date': curdate,
