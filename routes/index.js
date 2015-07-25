@@ -1,8 +1,9 @@
 var express = require('express'),
+    bloem = require('bloem'),
     config = require('../config'),
     utils = require('../lib/utils'),
     mongodb = require('../lib/mongodbhelper'),
-    redis = new require('../lib/redisstore').RedisStore(config.redis),
+    redis = new (require('../lib/redisstore')).RedisStore(config.redis),
     filterdiff = require('../lib/filter_diff'),
     router = express.Router(),
     datastoreurl = config.mongodb.url;
@@ -29,11 +30,10 @@ router.get('/filter',function(req,res){
             if (err) throw err;
             store.getFilter(date,function(err,result) {
                 if (err) return res.end('Error');
-                console.log(result);
                 return res.json({
                     'date': curdate,
                     'type': type,
-                    'filter': result[0].filters[type]
+                    'filter': JSON.stringify(JSON.parse(result[0].filters)[type])
                 });
             });
         });
@@ -52,6 +52,10 @@ router.get('/filter',function(req,res){
     
 });
 
+router.get('/serial',function(req,res) {
+    res.end('Not implemented yet');    
+});
+
 var dbconnector = function(callback) {
     var store = new mongodb(datastoreurl,function(err) {
         if (err) return callback(err);
@@ -64,7 +68,7 @@ var getDiffMongodb = function(curdate,olddate,type,response) {
         if (err) {
             throw err;
         }
-        filterdiff.generateDiff(mongodb,redis,olddate,type,function(err,res) {
+        filterdiff.generateDiff(mongodb,redis,olddate,curdate,type,function(err,res) {
             if (err) {
                 return mongodb.getFilter('current',function(err,res) {
                     if (err) throw err;

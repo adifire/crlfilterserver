@@ -84,7 +84,7 @@ var exec_test = function(mongodb,redis) {
 
 var genfilterhelper = function(info,callback) {
     filtergen.generateFilterDummy(info.mongoclient,info.date,
-                            info.serial,info.capacity,callback);
+                            info.serial,false,callback);
 };
 
 var checkConstructedFilter = function(mongodb,redis,olddate,curdate,type,callback) {
