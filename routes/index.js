@@ -1,5 +1,4 @@
 var express = require('express'),
-    bloem = require('bloem'),
     config = require('../config'),
     utils = require('../lib/utils'),
     mongodb = require('../lib/mongodbhelper'),
@@ -15,7 +14,7 @@ router.get('/',function(req,res){
 router.get('/filter',function(req,res){
     var q = req.query;
     console.log(q);
-    var date = q.date || 'current',
+    var date = (/^(?=.*\d)[\d ]+$/.test(date)) ? date : 'current',
         type = q.type || '1',
         curdate = utils.getFormattedDate();
 
@@ -27,9 +26,15 @@ router.get('/filter',function(req,res){
         // Return current filter
         date = 'current';
         return dbconnector(function(err,store) {
-            if (err) throw err;
+            if (err) {
+                throw err;
+            }
+
             store.getFilter(date,function(err,result) {
-                if (err) return res.end('Error');
+                if (err) {
+                    return res.end('Error');
+                }
+
                 return res.json({
                     'date': curdate,
                     'type': type,
@@ -45,33 +50,49 @@ router.get('/filter',function(req,res){
      */
     redis.getDiff(curdate,date,type,function(err,result) {
         if (err || !result || result === 0) {
-            return getDiffMongodb(curdate,date,type,res);
+            return genDiff(curdate,date,type,res);
         }
+        console.log(result);
         res.json({'date': curdate,'type': type,'diff': result});
     });
     
 });
 
+//TODO Implement certificate revocation check
 router.get('/serial',function(req,res) {
+    res.end('Not implemented yet');    
+});
+
+//TODO Implement config request
+// Gives clients options for existing filter configurations
+router.get('/config',function(req,res) {
     res.end('Not implemented yet');    
 });
 
 var dbconnector = function(callback) {
     var store = new mongodb(datastoreurl,function(err) {
-        if (err) return callback(err);
+        if (err) {
+            return callback(err);
+        }
+
         return callback(undefined,store);
     });
 };
 
-var getDiffMongodb = function(curdate,olddate,type,response) {
+var genDiff = function(curdate,olddate,type,response) {
     dbconnector(function(err,mongodb) {
         if (err) {
             throw err;
         }
-        filterdiff.generateDiff(mongodb,redis,olddate,curdate,type,function(err,res) {
+
+        filterdiff.generateDiff(mongodb,redis,olddate,curdate,type,
+        function(err,res) {
             if (err) {
                 return mongodb.getFilter('current',function(err,res) {
-                    if (err) throw err;
+                    if (err) {
+                        throw err;
+                    }
+
                     return response.json({
                         'date': curdate,
                         'type': type,
