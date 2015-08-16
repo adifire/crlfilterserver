@@ -5,3 +5,5 @@ node_modules/*
 serials*
 *.log
 temp/*
+actual_filters/*
+test_serials/*
