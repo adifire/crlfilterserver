@@ -7,3 +7,4 @@ serials*
 temp/*
 actual_filters/*
 test_serials/*
+config.js
