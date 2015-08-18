@@ -14,10 +14,11 @@ router.get('/',function(req,res){
 router.get('/filter',function(req,res){
     var q = req.query;
     console.log(q);
-    var date = (/^(?=.*\d)[\d ]+$/.test(date)) ? date : 'current',
+    var date = (/^\d{8}$/.test(date)) ? date : 'current',
         type = q.type || '1',
         curdate = utils.getFormattedDate();
 
+    console.log(date);
     /*
      * If old date, check if diff exists. If not generate 
      * and store diff also
@@ -30,7 +31,7 @@ router.get('/filter',function(req,res){
                 throw err;
             }
 
-            store.getFilter(date,function(err,result) {
+            store.getFilter(date,type,function(err,result) {
                 if (err) {
                     return res.end('Error');
                 }
@@ -38,7 +39,7 @@ router.get('/filter',function(req,res){
                 return res.json({
                     'date': curdate,
                     'type': type,
-                    'filter': JSON.stringify(JSON.parse(result[0].filters)[type])
+                    'filter': result
                 });
             });
         });
@@ -88,7 +89,7 @@ var genDiff = function(curdate,olddate,type,response) {
         filterdiff.generateDiff(mongodb,redis,olddate,curdate,type,
         function(err,res) {
             if (err) {
-                return mongodb.getFilter('current',function(err,res) {
+                return mongodb.getFilter('current',type,function(err,res) {
                     if (err) {
                         throw err;
                     }
@@ -96,7 +97,7 @@ var genDiff = function(curdate,olddate,type,response) {
                     return response.json({
                         'date': curdate,
                         'type': type,
-                        'filter': res[0].filters[type]
+                        'filter': res
                     });
                 });
             }
