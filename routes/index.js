@@ -83,6 +83,9 @@ function genDiff(curdate,olddate,type,response) {
                     throw err2;
                 }
                 var diff = filterdiff.generateDiff(oldfilter,newfilter);
+                if (!diff) {
+                    return getLatestFilter(response,curdate,type);
+                }
                 redis.storeDiff(curdate,olddate,type,diff);
                 response.json({
                     'date': curdate,
